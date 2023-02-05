@@ -46,7 +46,7 @@ const isNotLoggedIn = (req, res, next) => {
 const User = require("../../models/user");
 
 // user root route to get all users
-router.get("/", async (_req, res) => {
+router.get("/", isAuthenticated, async (_req, res) => {
   const allUsers = await User.findAll();
   if (allUsers.length === 0) {
     return res.json({ message: "There are no users in the database." });

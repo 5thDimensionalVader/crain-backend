@@ -20,6 +20,9 @@ app.use(express.urlencoded({ extended: false }));
 
 // routes
 app.use("/api/user", userRoutes);
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to crain-api. Start using with /api/*" });
+});
 
 // app
 app.listen(PORT, (error) => {

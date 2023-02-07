@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const session = require("express-session");
 const MemoryStore = require("memorystore")(session);
-const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const router = express.Router();

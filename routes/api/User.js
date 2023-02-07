@@ -2,8 +2,8 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const passport = require("passport");
 const session = require("express-session");
+const MemoryStore = require("memorystore")(session);
 const cors = require("cors");
-const cookieParser = require("cookie-parser");
 
 const router = express.Router();
 
@@ -11,20 +11,17 @@ const router = express.Router();
 const { registerSchema, loginSchema } = require("../../config/inputValidation");
 
 // use middleware
-router.use(cors({ origin: "http://localhost:3000", credentials: true }));
+router.use(cors());
 router.use(
   session({
-    secret:
-      "b35c2ae746276a32f7dfd81676ac6c554704dda0852a19f9b6d509b1b75ac12df189cd1f23788cc301d61c3508c8327f235e1bb14195df5bfb99855097a78446",
+    secret: process.env.SECRET || "secretKey",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 20000, expires: 20000 },
+    cookie: { secure: false, maxAge: 90000 },
+    store: new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    }),
   })
-);
-router.use(
-  cookieParser(
-    "b35c2ae746276a32f7dfd81676ac6c554704dda0852a19f9b6d509b1b75ac12df189cd1f23788cc301d61c3508c8327f235e1bb14195df5bfb99855097a78446"
-  )
 );
 router.use(passport.initialize());
 router.use(passport.session());
@@ -32,7 +29,7 @@ require("../../config/passportConfig")(passport);
 
 // custom middleware
 const isAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) return next({ message: "User is authenticated." });
+  if (req.isAuthenticated()) return next();
   return res.status(401).json({ error: "Unauthorized request." });
 };
 
@@ -110,20 +107,27 @@ router.post("/login", isNotLoggedIn, async (req, res) => {
 });
 
 // user route to /logout
-router.post(
-  "/logout",
-  isAuthenticated,
-  (req, res) => {
-    res.clearCookie("connect.sid", { path: "/" });
-    req.session.destroy((error) => {
-      if (error) return res.status(500).json({ error });
-    });
-    next();
-  },
-  (req, res) => {
-    return res.json({ message: "User logged out successfully." });
-  }
-);
+// router.post(
+//   "/logout",
+//   isAuthenticated,
+//   (req, res) => {
+//     res.clearCookie("connect.sid", { path: "/" });
+//     req.session.destroy((error) => {
+//       if (error) return res.status(500).json({ error });
+//     });
+//     next();
+//   },
+//   (req, res) => {
+//     return res.json({ message: "User logged out successfully." });
+//   }
+// );
+
+router.post("/logout", (req, res, next) => {
+  req.logout((error) => {
+    if (error) return next(error);
+  });
+  res.redirect("/");
+});
 
 // user route to update user
 

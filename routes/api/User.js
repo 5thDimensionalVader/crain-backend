@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const session = require("express-session");
 const MemoryStore = require("memorystore")(session);
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const router = express.Router();
@@ -29,14 +30,13 @@ require("../../config/passportConfig")(passport);
 
 // custom middleware
 const isAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) return next();
+  if (req.isAuthenticated()) return next({message: "Access allowed"});
   return res.status(401).json({ error: "Unauthorized request." });
 };
 
 const isNotLoggedIn = (req, res, next) => {
-  if (req.user)
-    return res.status(400).json({ message: "You are already logged in" });
-  return next();
+  if (req.user) res.status(400).json({ message: "You are already logged in" });
+  next();
 };
 
 // user model
@@ -91,10 +91,10 @@ router.post("/login", isNotLoggedIn, async (req, res) => {
   }
   try {
     passport.authenticate("local", (error, user, info) => {
-      if (error) return res.status(500).json({ error });
+      if (error) return res.status(500).json({ error: error.message });
       if (!user) return res.status(400).json({ error: info.message });
       req.logIn(user, (error) => {
-        if (error) return res.status(500).json({ error });
+        if (error) return res.status(500).json({ error: error.message });
         return res.json(user);
       });
     })(req, res);

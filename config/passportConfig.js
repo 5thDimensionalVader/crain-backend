@@ -17,6 +17,7 @@ module.exports = function (passport) {
           const isMatch = await bcrypt.compare(password, user.password);
           if (isMatch) {
             return done(null, {
+              id: user.id, 
               name: user.name,
               email: user.email,
             });

@@ -11,21 +11,21 @@ module.exports = function (passport) {
           const user = await User.findOne({ where: { email } });
           if (!user) {
             return done(null, false, {
-              message: "Email or passport incorrect",
+              message: "Incorrect email or password",
             });
           }
           const isMatch = await bcrypt.compare(password, user.password);
           if (isMatch) {
             return done(null, {
-              id: user.id, 
+              id: user.id,
               name: user.name,
               email: user.email,
             });
           } else {
-            return done(null, false, { message: "Password incorrect" });
+            return done(null, false, { message: "Incorrect password" });
           }
         } catch (error) {
-          return done(error);
+          return done(`Error: ${error}`);
         }
       }
     )
@@ -35,8 +35,12 @@ module.exports = function (passport) {
     done(null, user.id);
   });
   passport.deserializeUser((id, done) => {
-    User.findByPk(id, (err, user) => {
-      done(err, user);
-    });
+    User.findByPk(id)
+      .then((user) => {
+        done(null, user);
+      })
+      .catch((error) => {
+        done(error, null);
+      });
   });
 };

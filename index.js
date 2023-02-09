@@ -8,8 +8,11 @@ const PORT = process.env.PORT || 5000;
 
 // sync database
 sequelize
-  .sync()
-  .then(() => console.log("database is connected, tables synced."));
+  .sync({
+    logging: false,
+    force: false,
+  })
+  .then(() => console.log("Connected to database."));
 
 // init express class instance
 const app = express();
@@ -20,8 +23,8 @@ app.use(express.urlencoded({ extended: false }));
 
 // routes
 app.use("/api/user", userRoutes);
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to crain-api. Start using with /api/*" });
+app.get("/", (_req, res) => {
+  res.json({ message: "Welcome to crain-api! Developed by @5thDimensionalVader" });
 });
 
 // app

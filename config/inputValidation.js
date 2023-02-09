@@ -6,6 +6,7 @@ const registerSchema = Yup.object().shape({
   age: Yup.number().required().positive().integer(),
   email: Yup.string().email().required(),
   password: Yup.string().required(),
+  isAdmin: Yup.boolean().required(),
 });
 
 const loginSchema = Yup.object().shape({
